@@ -13,6 +13,8 @@ import {
   ArrowRight,
   Droplets,
 } from 'lucide-react';
+import Image from 'next/image';
+import logoImg from '@/assets/logo.png';
 
 const FloatingBloodCell = ({ size, top, left, delay, duration }) => (
   <div
@@ -98,15 +100,32 @@ const LoginPage = () => {
       {/* Main card – glass effect */}
       <div className="relative w-full max-w-5xl bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[3rem] shadow-2xl shadow-red-900/20 grid lg:grid-cols-2 overflow-hidden z-10">
         {/* Left: Illustration / branding */}
-        <div className="hidden lg:flex flex-col justify-center items-center p-10 bg-gradient-to-br from-red-700/40 to-rose-800/30 relative">
-          <div className="absolute inset-0 bg-black/10" />
+        <div
+          className="hidden lg:flex flex-col justify-center items-center p-10 relative bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('https://plus.unsplash.com/premium_photo-1723187717061-07e632d3edf8?q=80&w=716&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+          }}
+        >
+          {/* Red overlay with low opacity for that blood-theme vibe */}
+          <div className="absolute inset-0 bg-red-900/40 z-0" />
+          {/* Optional: Keep a subtle gradient if you want extra depth */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-700/30 to-rose-800/20 z-0" />
+
           <div className="relative z-10 text-center space-y-6">
-            <div className="mx-auto w-40 h-40 flex items-center justify-center bg-white/10 rounded-full p-6 shadow-[0_0_60px_rgba(220,38,38,0.3)]">
-              <Droplets size={72} className="text-red-300 drop-shadow-lg" />
+            <div className="mx-auto w-40 h-40 flex items-center justify-center bg-white/10 backdrop-blur-sm rounded-full p-6 shadow-[0_0_60px_rgba(220,38,38,0.3)] border border-white/10">
+              <Image
+                src={logoImg}
+                height={50}
+                width={50}
+                alt="BloodBridge Logo"
+                className="object-cover"
+              />
             </div>
-            <h2 className="text-4xl font-extrabold text-white tracking-tight">
-              BloodBridge
-            </h2>
+            <div className="flex flex-col justify-center">
+              <h1 className="font-extrabold text-3xl tracking-tight text-white/90">
+                Blood<span className="text-red-500">Bridge</span>
+              </h1>
+            </div>
             <p className="text-red-100/80 max-w-xs mx-auto">
               Every drop brings hope. Log in to continue your lifesaving
               mission.
