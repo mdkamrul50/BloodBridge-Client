@@ -1,6 +1,7 @@
 import BannerSection from '@/components/Banner';
 import ContactUs from '@/components/ContactUs';
 import FeaturesSection from '@/components/FeaturdSection';
+import WhyDonateSection from '@/components/WhyDonateSection';
 import Image from 'next/image';
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
       <BannerSection />
       <FeaturesSection />
       <ContactUs />
+      <WhyDonateSection />
     </div>
   );
 }

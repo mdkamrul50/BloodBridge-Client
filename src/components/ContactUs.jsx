@@ -4,6 +4,58 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Heart, MessageSquare } from 'lucide-react';
 
+// Fixed (non‑random) styles for the decorative floating cells
+const floatingCells = [
+  {
+    width: 180,
+    height: 180,
+    left: '15%',
+    top: '20%',
+    duration: '18s',
+    delay: '0s',
+  },
+  {
+    width: 140,
+    height: 140,
+    left: '75%',
+    top: '60%',
+    duration: '22s',
+    delay: '1s',
+  },
+  {
+    width: 220,
+    height: 220,
+    left: '40%',
+    top: '10%',
+    duration: '20s',
+    delay: '2.5s',
+  },
+  {
+    width: 160,
+    height: 160,
+    left: '85%',
+    top: '30%',
+    duration: '24s',
+    delay: '0.5s',
+  },
+  {
+    width: 200,
+    height: 200,
+    left: '25%',
+    top: '80%',
+    duration: '19s',
+    delay: '3s',
+  },
+  {
+    width: 130,
+    height: 130,
+    left: '60%',
+    top: '45%',
+    duration: '21s',
+    delay: '1.5s',
+  },
+];
+
 const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,35 +71,34 @@ const ContactUs = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // এখানে তোমার API কল বা ফর্ম সাবমিট লজিক বসাবে
+    // Replace with your actual API call or form submission logic
     console.log('Form submitted:', formData);
     setSubmitted(true);
-    // 3 সেকেন্ড পর মেসেজ রিমুভ
     setTimeout(() => setSubmitted(false), 3000);
   };
 
   return (
     <section className="relative py-24 bg-gradient-to-br from-slate-900 via-red-950 to-slate-900 overflow-hidden">
-      {/* ফ্লোটিং ব্লাড সেল অ্যানিমেশন */}
+      {/* Floating blood cells – now with fixed styles */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        {[...Array(6)].map((_, i) => (
+        {floatingCells.map((cell, i) => (
           <div
             key={i}
             className={`absolute rounded-full bg-red-500/20 blur-xl animate-float-${i + 1}`}
             style={{
-              width: `${Math.random() * 200 + 100}px`,
-              height: `${Math.random() * 200 + 100}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDuration: `${Math.random() * 10 + 15}s`,
-              animationDelay: `${Math.random() * 5}s`,
+              width: `${cell.width}px`,
+              height: `${cell.height}px`,
+              left: cell.left,
+              top: cell.top,
+              animationDuration: cell.duration,
+              animationDelay: cell.delay,
             }}
           />
         ))}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* সেকশন হেডার */}
+        {/* Section Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 text-red-400 bg-red-900/30 px-4 py-1.5 rounded-full text-sm font-semibold mb-4 border border-red-500/30">
             <Heart size={16} className="animate-pulse" />
@@ -66,7 +117,7 @@ const ContactUs = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* বাম কলাম - কন্টাক্ট ইনফো */}
+          {/* Left Column – Contact Info */}
           <div className="space-y-8">
             <div className="group bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 hover:border-red-500/50 transition-all duration-500 hover:-translate-y-1 shadow-xl">
               <div className="flex items-start gap-4">
@@ -115,7 +166,7 @@ const ContactUs = () => {
             </div>
           </div>
 
-          {/* ডান কলাম - কন্টাক্ট ফর্ম */}
+          {/* Right Column – Contact Form */}
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-xl">
             <div className="flex items-center gap-3 mb-8">
               <MessageSquare size={28} className="text-red-400" />
@@ -207,7 +258,6 @@ const ContactUs = () => {
                 Send Message
               </button>
 
-              {/* সাফল্য মেসেজ */}
               {submitted && (
                 <div className="mt-4 p-3 bg-green-900/50 border border-green-500/50 rounded-xl text-green-300 text-center">
                   Thank you! Your message has been sent successfully.
@@ -218,7 +268,7 @@ const ContactUs = () => {
         </div>
       </div>
 
-      {/* কাস্টম CSS অ্যানিমেশন (ফ্লোটিং সেলস ও এন্ট্রি ইফেক্ট) */}
+      {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes float {
           0%,
