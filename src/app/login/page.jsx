@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import logoImg from '@/assets/logo.png';
+import { authClient } from '@/lib/auth-client'; 
 
 const FloatingBloodCell = ({ size, top, left, delay, duration }) => (
   <div
@@ -49,18 +50,30 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
-    // --- REPLACE WITH YOUR AUTH LOGIC ---
-    setTimeout(() => {
-      if (
-        formData.email === 'test@bloodbridge.com' &&
-        formData.password === '123456'
-      ) {
-        router.push('/dashboard');
-      } else {
-        setError('Invalid email or password.');
+    setError('');
+
+    try {
+      const { data, error: signInError } = await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) {
+        setError(signInError.message || 'Invalid email or password.');
+         toast.error(signInError.message || 'Invalid email or password.');
         setLoading(false);
+        return;
       }
-    }, 1500);
+
+      // Successful login – redirect to dashboard
+      
+    toast.success('Login successful!');
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,11 +119,8 @@ const LoginPage = () => {
             backgroundImage: `url('https://plus.unsplash.com/premium_photo-1723187717061-07e632d3edf8?q=80&w=716&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
           }}
         >
-          {/* Red overlay with low opacity for that blood-theme vibe */}
           <div className="absolute inset-0 bg-red-900/40 z-0" />
-          {/* Optional: Keep a subtle gradient if you want extra depth */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-700/30 to-rose-800/20 z-0" />
-
           <div className="relative z-10 text-center space-y-6">
             <div className="mx-auto w-40 h-40 flex items-center justify-center bg-white/10 backdrop-blur-sm rounded-full p-6 shadow-[0_0_60px_rgba(220,38,38,0.3)] border border-white/10">
               <Image
@@ -269,7 +279,7 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* Social login */}
+            {/* Social login (placeholder) */}
             <div className="grid grid-cols-2 gap-4">
               <button className="flex items-center justify-center gap-2 px-4 py-3 bg-white/5 border border-gray-700 rounded-2xl text-gray-300 hover:bg-white/10 transition font-medium">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">

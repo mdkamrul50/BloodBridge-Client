@@ -13,4 +13,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+
+  user: {
+    additionalFields: {
+      roll: {
+        defaultValue: 'Donor',
+      },
+      status: {
+        defaultValue: 'Active',
+      },
+    },
+  },
 });
