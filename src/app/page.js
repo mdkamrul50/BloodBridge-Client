@@ -11,9 +11,10 @@ export default function Home() {
     <div>
       <BannerSection />
       <FeaturesSection />
-      <ContactUs />
       <WhyDonateSection />
+
       <Testimonials />
+      <ContactUs />
       <FAQSection />
     </div>
   );

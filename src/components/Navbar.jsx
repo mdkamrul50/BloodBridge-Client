@@ -60,7 +60,7 @@ const Navbar = ({ isLoggedIn = false, user = null }) => {
     <nav
       className={`fixed w-full top-0 z-50 transition-all duration-500 ease-in-out ${
         scrolled
-          ? 'backdrop-blur-xl bg-white/80 border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.05)] py-3'
+          ? 'backdrop-blur-2xl bg-white/50 border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.05)] py-3'
           : 'bg-transparent py-5'
       }`}
     >
