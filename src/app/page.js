@@ -1,9 +1,10 @@
-import Image from "next/image";
+import BannerSection from '@/components/Banner';
+import Image from 'next/image';
 
 export default function Home() {
   return (
-<div>
-  homepage
-</div>
+    <div>
+      <BannerSection />
+    </div>
   );
 }
