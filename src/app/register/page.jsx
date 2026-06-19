@@ -17,13 +17,12 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import Image from 'next/image';
-import logoImg from '@/assets/logo.png'; 
-import { authClient } from '@/lib/auth-client'; // পাথ ঠিক করে নাও
-
+import logoImg from '@/assets/logo.png';
+import { authClient } from '@/lib/auth-client'; 
 
 import districtsRaw from '../../../data/districts.json';
 import upazilasRaw from '../../../data/upazilas.json';
-
+import toast from 'react-hot-toast';
 
 const districtsInfo = districtsRaw[2].data;
 const upazilasInfo = upazilasRaw[2].data;
@@ -58,7 +57,6 @@ const RegisterPage = () => {
   // District & Upazila state
   const [filteredUpazilas, setFilteredUpazilas] = useState([]);
 
-  
   useEffect(() => {
     if (formData.district) {
       const selectedDistrict = districtsInfo.find(
@@ -69,7 +67,7 @@ const RegisterPage = () => {
           (u) => u.district_id === selectedDistrict.id
         );
         setFilteredUpazilas(upazilas);
-        
+
         if (!upazilas.find((u) => u.name === formData.upazila)) {
           setFormData((prev) => ({ ...prev, upazila: '' }));
         }
@@ -94,7 +92,7 @@ const RegisterPage = () => {
     setAvatarPreview(previewUrl);
 
     setAvatarUploading(true);
-    const apiKey = '9fe474f0963f1d16fc425bca88d257cb'; 
+    const apiKey = '9fe474f0963f1d16fc425bca88d257cb';
 
     const formPayload = new FormData();
     formPayload.append('image', file);
@@ -119,74 +117,69 @@ const RegisterPage = () => {
     }
   };
 
- const handleSubmit = async (e) => {
-   e.preventDefault();
-   setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
 
-   // --- Validation (existing) ---
-   if (
-     !formData.fullName ||
-     !formData.email ||
-     !formData.password ||
-     !formData.confirmPassword ||
-     !formData.bloodGroup ||
-     !formData.district ||
-     !formData.upazila
-   ) {
-     setError('Please fill in all required fields.');
-     return;
-   }
-   if (formData.password !== formData.confirmPassword) {
-     setError('Passwords do not match.');
-     return;
-   }
-   if (!agreeTerms) {
-     setError('You must agree to the Terms and Privacy Policy.');
-     return;
-   }
+    // --- Validation (existing) ---
+    if (
+      !formData.fullName ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword ||
+      !formData.bloodGroup ||
+      !formData.district ||
+      !formData.upazila
+    ) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (!agreeTerms) {
+      setError('You must agree to the Terms and Privacy Policy.');
+      return;
+    }
 
-   setLoading(true);
+    setLoading(true);
 
-   try {
-     // Better Auth sign-up
-     const { data, error: signUpError } = await authClient.signUp.email({
-       email: formData.email,
-       password: formData.password,
-       name: formData.fullName,
-       password: formData.password,
-       confirmPassword: formData.confirmPassword,
-       bloodGroup: formData.bloodGroup,
-       district: formData.district,
-       upazila: formData.upazila,
-       phone: formData.phone,
-       avatarUrl: formData.avatarUrl,
-       // Additional data as metadata (if your schema supports it)
-       metadata: {
-         bloodGroup: formData.bloodGroup,
-         district: formData.district,
-         upazila: formData.upazila,
-         phone: formData.phone,
-         avatarUrl: formData.avatarUrl,
-       },
-     });
+    try {
+      // Better Auth sign-up
+      const { data, error: signUpError } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.fullName,
+        password: formData.password,
+        image: formData.avatarUrl,
+        // Additional data as metadata (if your schema supports it)
+        metadata: {
+          bloodGroup: formData.bloodGroup,
+          district: formData.district,
+          upazila: formData.upazila,
+          phone: formData.phone,
+          avatarUrl: formData.avatarUrl,
+        },
+      });
 
-     if (signUpError) {
-       // Handle specific error messages
-       setError(signUpError.message || 'Registration failed');
-       toast.error(signUpError.message || 'Registration failed.');
-       setLoading(false);
-       return;
-     }
+      if (signUpError) {
+        // Handle specific error messages
+        setError(signUpError.message || 'Registration failed');
+        toast.error(signUpError.message || 'Registration failed.');
+        setLoading(false);
+        return;
+      }
 
-     // Success – redirect to dashboard or login
-      toast.success('Registration successful! Please login.');
-     router.push('/dashboard'); 
-   } catch (err) {
-     console.error('Unexpected error:', err);
-     setError('Something went wrong. Please try again.');
-     setLoading(false);
-   }
- };
+      // Success – redirect to dashboard or login
+      toast.success('Registration successful! ');
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#020611] relative overflow-hidden p-4 sm:p-8 font-sans selection:bg-red-500/30">

@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import logoImg from '@/assets/logo.png';
-import { authClient } from '@/lib/auth-client'; 
+import { authClient } from '@/lib/auth-client';
+import toast from 'react-hot-toast';
 
 const FloatingBloodCell = ({ size, top, left, delay, duration }) => (
   <div
@@ -60,14 +61,14 @@ const LoginPage = () => {
 
       if (signInError) {
         setError(signInError.message || 'Invalid email or password.');
-         toast.error(signInError.message || 'Invalid email or password.');
+        toast.error(signInError.message || 'Invalid email or password.');
         setLoading(false);
         return;
       }
 
       // Successful login – redirect to dashboard
-      
-    toast.success('Login successful!');
+
+      toast.success('Login successful!');
       router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
