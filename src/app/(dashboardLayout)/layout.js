@@ -4,13 +4,31 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, User, Menu, X, LogOut, Activity } from 'lucide-react';
+import {
+  LayoutDashboard,
+  User,
+  Menu,
+  X,
+  LogOut,
+  Activity,
+  FilePlus,
+  ClipboardList,
+} from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
+import Logo from '@/assets/logo.png';
+import Image from 'next/image';
+
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
+  {
+    href: '/dashboard/create-request',
+    label: 'Create Request',
+    icon: FilePlus,
+  },
+  { href: '/dashboard/requests', label: 'My Requests', icon: ClipboardList }, 
 ];
 
 export default function DashboardLayout({ children }) {
@@ -37,7 +55,7 @@ export default function DashboardLayout({ children }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-screen w-72 bg-white  z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto flex flex-col ${
+        className={`fixed top-0 left-0 h-screen w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:z-auto flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -45,7 +63,13 @@ export default function DashboardLayout({ children }) {
         <div className="flex items-center justify-between p-6 border-b border-gray-100 mt-6">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-rose-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-red-200 group-hover:scale-105 transition-transform">
-              <Activity size={20} />
+              <Image
+                src={Logo}
+                height={22}
+                width={22}
+                alt="BloodBridge Logo"
+                className="object-cover"
+              />
             </div>
             <div>
               <h1 className="font-extrabold text-xl tracking-tight text-gray-800">
