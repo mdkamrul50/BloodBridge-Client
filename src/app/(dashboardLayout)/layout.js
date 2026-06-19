@@ -13,14 +13,34 @@ import {
   Activity,
   FilePlus,
   ClipboardList,
+  Users,
+  Droplet,
 } from 'lucide-react';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import Logo from '@/assets/logo.png';
 import Image from 'next/image';
 
+// Sidebar links based on roles
+const adminLinks = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/profile', label: 'Profile', icon: User },
+  { href: '/dashboard/all-users', label: 'All Users', icon: Users },
+  { href: '/dashboard/all-requests', label: 'All Requests', icon: Droplet },
+];
 
-const sidebarLinks = [
+const volunteerLinks = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/profile', label: 'Profile', icon: User },
+  { href: '/dashboard/all-requests', label: 'All Requests', icon: Droplet },
+  {
+    href: '/dashboard/create-request',
+    label: 'Create Request',
+    icon: FilePlus,
+  },
+];
+
+const donorLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
   {
@@ -28,7 +48,7 @@ const sidebarLinks = [
     label: 'Create Request',
     icon: FilePlus,
   },
-  { href: '/dashboard/requests', label: 'My Requests', icon: ClipboardList }, 
+  { href: '/dashboard/requests', label: 'My Requests', icon: ClipboardList },
 ];
 
 export default function DashboardLayout({ children }) {
@@ -36,6 +56,12 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Determine sidebar links based on role
+  const role = session?.user?.roll?.toLowerCase();
+  let sidebarLinks = donorLinks; // default
+  if (role === 'admin') sidebarLinks = adminLinks;
+  else if (role === 'volunteer') sidebarLinks = volunteerLinks;
 
   const handleLogout = async () => {
     const { authClient } = await import('@/lib/auth-client');
@@ -76,7 +102,11 @@ export default function DashboardLayout({ children }) {
                 Blood<span className="text-red-600">Bridge</span>
               </h1>
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                Donor Panel
+                {role === 'admin'
+                  ? 'Admin Panel'
+                  : role === 'volunteer'
+                    ? 'Volunteer Panel'
+                    : 'Donor Panel'}
               </p>
             </div>
           </Link>
@@ -138,7 +168,7 @@ export default function DashboardLayout({ children }) {
         </div>
       </aside>
 
-      {/* Main Content Area (full width after sidebar) */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Mobile Header */}
         <header className="lg:hidden flex items-center justify-between p-4 bg-white shadow-sm sticky top-0 z-30">
@@ -149,10 +179,9 @@ export default function DashboardLayout({ children }) {
             <Menu size={24} />
           </button>
           <span className="font-bold text-lg text-gray-800">Dashboard</span>
-          <div className="w-8" /> {/* spacer */}
+          <div className="w-8" />
         </header>
 
-        {/* Page content (fills available space, pushes footer down) */}
         <main
           className="flex-1 flex flex-col bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
@@ -161,7 +190,6 @@ export default function DashboardLayout({ children }) {
             backgroundColor: 'rgba(255, 240, 240, 0.65)',
           }}
         >
-          {/* Children wrapped in centered container */}
           <div className="flex-1 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">{children}</div>
           </div>
