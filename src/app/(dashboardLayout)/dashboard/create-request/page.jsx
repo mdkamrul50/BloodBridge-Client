@@ -17,7 +17,7 @@ import {
   Sparkles,
   Building2,
   MessageSquare,
-  Mail,
+  MailIcon,
 } from 'lucide-react';
 
 // JSON data (adjust paths if needed)
