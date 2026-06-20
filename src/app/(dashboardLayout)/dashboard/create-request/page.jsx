@@ -1,4 +1,3 @@
-// app/dashboard/create-donation-request/page.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,10 +17,10 @@ import {
   Sparkles,
   Building2,
   MessageSquare,
-  MailIcon,
+  Mail,
 } from 'lucide-react';
 
-// JSON data – adjust paths if needed
+// JSON data (adjust paths if needed)
 import districtsRaw from '../../../../../data/districts.json';
 import upazilasRaw from '../../../../../data/upazilas.json';
 
@@ -29,7 +28,7 @@ const districtsInfo = districtsRaw[2].data;
 const upazilasInfo = upazilasRaw[2].data;
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-// Fixed floating blood cells (no randomness → no hydration mismatch)
+// Fixed floating blood cells
 const floatingCells = [
   {
     width: 180,
@@ -129,6 +128,7 @@ export default function CreateDonationRequestPage() {
       requestMessage,
     } = formData;
 
+    // Basic validation
     if (
       !recipientName ||
       !recipientDistrict ||
@@ -144,24 +144,47 @@ export default function CreateDonationRequestPage() {
       return;
     }
 
-    // Build final request object (including read‑only fields)
-    const donationRequest = {
+    setLoading(true);
+    setError('');
+
+    // Prepare payload – map frontend fields to backend fields
+    const payload = {
+      recipientName,
+      district: recipientDistrict, // backend expects "district"
+      upazila: recipientUpazila, // backend expects "upazila"
+      hospitalName,
+      fullAddress,
+      bloodGroup,
+      donationDate,
+      donationTime,
+      requestMessage,
       requesterName,
       requesterEmail,
-      ...formData,
-      status: 'pending', // default status
+      // status will be set by backend as 'pending'
     };
 
-    setLoading(true);
-    // Simulate API call (replace later)
-    setTimeout(() => {
-      console.log('Donation request created:', donationRequest);
-      toast.success('Donation request created successfully!');
-      setLoading(false);
-      router.push('/dashboard/requests'); // go to My Requests
-    }, 1500);
-  };
+    try {
+      const res = await fetch('http://localhost:5000/api/create-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to create request');
+      }
+
+      toast.success('Donation request created successfully!');
+      router.push('/dashboard/requests'); // redirect to My Requests
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="relative min-h-screen">
       {/* Premium Background: floating blood cells */}

@@ -115,8 +115,8 @@ export default function PublicRequestsPage() {
                   <h2 className="text-2xl font-bold text-white">
                     {req.recipientName}
                   </h2>
-                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-red-600/20 text-red-300 rounded-full text-sm font-bold border border-red-500/30 ">
-                    <Droplet size={16} className='' />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-5  text-red-500 rounded-full text-sm font-bold shadow-sm shadow-red-500 ">
+                    <Droplet size={16} className="" />
                     {req.bloodGroup}
                   </span>
                 </div>

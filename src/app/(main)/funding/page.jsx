@@ -1,49 +1,44 @@
 // app/(dashboardLayout)/funding/page.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
-import {
-  HandCoins,
-  Search,
-  Loader2,
-  DollarSign,
-  Users,
-  TrendingUp,
-  Sparkles,
-} from 'lucide-react';
+import { HandCoins, Loader2, DollarSign, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-// Dummy data
-const allFundings = [
-  { id: 'f1', donorName: 'Karim Uddin', amount: 500, date: '2026-03-15' },
-  { id: 'f2', donorName: 'Ayesha Siddiqua', amount: 1200, date: '2026-03-18' },
-  { id: 'f3', donorName: 'Rafiq Hasan', amount: 350, date: '2026-03-20' },
-  { id: 'f4', donorName: 'Sumaiya Akter', amount: 800, date: '2026-03-22' },
-  { id: 'f5', donorName: 'Sohan Rahman', amount: 100, date: '2026-03-25' },
-  { id: 'f6', donorName: 'Nusrat Jahan', amount: 600, date: '2026-03-28' },
-  { id: 'f7', donorName: 'Maruf Hasan', amount: 2000, date: '2026-04-01' },
-];
 
 const ITEMS_PER_PAGE = 5;
 
 export default function FundingPage() {
   const { data: session, isPending: sessionLoading } = useSession();
-  const [fundings, setFundings] = useState(allFundings);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [fundings, setFundings] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [fundAmount, setFundAmount] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  const totalDonors = new Set(fundings.map((f) => f.donorName)).size;
-  const totalAmount = fundings.reduce((sum, f) => sum + f.amount, 0);
+  // Fetch real funding data from backend
+  useEffect(() => {
+    fetch('http://localhost:5000/api/funding')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch');
+        return res.json();
+      })
+      .then((data) => {
+        setFundings(data);
+        setFetchLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setFetchLoading(false);
+      });
+  }, []);
 
-  const filtered = fundings.filter((f) =>
-    f.donorName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice(
+  // Pagination logic (no filtering anymore)
+  const totalPages = Math.ceil(fundings.length / ITEMS_PER_PAGE);
+  const paginated = fundings.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -54,9 +49,10 @@ export default function FundingPage() {
       return;
     }
     setPaymentLoading(true);
+    // Simulate Stripe / backend call – later replace with real payment flow
     setTimeout(() => {
       const newFunding = {
-        id: `f${fundings.length + 1}`,
+        _id: `temp${Date.now()}`,
         donorName: session?.user?.name || 'You',
         amount: Number(fundAmount),
         date: new Date().toISOString().split('T')[0],
@@ -69,7 +65,8 @@ export default function FundingPage() {
     }, 1500);
   };
 
-  if (sessionLoading) {
+  // Loading / error states
+  if (sessionLoading || fetchLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0b0f1c]">
         <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
@@ -77,11 +74,18 @@ export default function FundingPage() {
     );
   }
 
-  return (
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0b0f1c]">
+        <p className="text-red-400">Failed to load data: {error}</p>
+      </div>
+    );
+  }
 
-    <div className="min-h-screen max-w-full  bg-[#0b0f1c]  px-4 md:px-8 py-8 pt-38">
+  return (
+    <div className="min-h-screen max-w-full bg-[#0b0f1c] px-4 md:px-8 py-8 pt-38">
       <div className="max-w-6xl mx-auto space-y-8">
-    
+        {/* Welcome Banner (unchanged) */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#2d1b3e] p-8 md:p-10 text-white shadow-xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/20 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-rose-600/10 rounded-full blur-3xl" />
@@ -111,63 +115,12 @@ export default function FundingPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-400 uppercase">Total Donors</p>
-                <p className="text-3xl font-bold text-white mt-1">
-                  {totalDonors}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                <Users size={20} className="text-blue-300" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-400 uppercase">Total Raised</p>
-                <p className="text-3xl font-bold text-white mt-1">
-                  ৳{totalAmount.toLocaleString()}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                <HandCoins size={20} className="text-emerald-300" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-400 uppercase">
-                  Your Contribution
-                </p>
-                <p className="text-3xl font-bold text-white mt-1">
-                  $
-                  {fundings
-                    .filter((f) => f.donorName === (session?.user?.name || ''))
-                    .reduce((sum, f) => sum + f.amount, 0)}
-                </p>
-              </div>
-              <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
-                <TrendingUp size={20} className="text-red-300" />
-              </div>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Table */}
+        {/* Table – no search, just the list */}
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <HandCoins size={20} className="text-red-400" />
-              Recent Donations
-            </h2>
-
-          </div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-6">
+            <HandCoins size={20} className="text-red-400" />
+            Recent Donations
+          </h2>
 
           {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto">
@@ -188,7 +141,7 @@ export default function FundingPage() {
               <tbody className="divide-y divide-gray-800">
                 {paginated.map((fund) => (
                   <tr
-                    key={fund.id}
+                    key={fund._id}
                     className="hover:bg-white/5 transition-colors"
                   >
                     <td className="px-5 py-4 font-medium text-white">
@@ -224,7 +177,7 @@ export default function FundingPage() {
           <div className="md:hidden space-y-3">
             {paginated.map((fund) => (
               <div
-                key={fund.id}
+                key={fund._id}
                 className="bg-white/5 border border-white/10 rounded-2xl p-4 flex justify-between items-center"
               >
                 <div>
@@ -281,7 +234,7 @@ export default function FundingPage() {
           )}
         </div>
 
-        {/* Donation Modal */}
+        {/* Donation Modal (unchanged) */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-[#1e1e2e] w-full max-w-md rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
