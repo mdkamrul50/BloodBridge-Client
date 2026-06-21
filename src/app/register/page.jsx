@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import logoImg from '@/assets/logo.png';
-import { authClient } from '@/lib/auth-client'; 
+import { authClient } from '@/lib/auth-client';
 
 import districtsRaw from '../../../data/districts.json';
 import upazilasRaw from '../../../data/upazilas.json';
@@ -147,21 +147,17 @@ const RegisterPage = () => {
 
     try {
       // Better Auth sign-up
-      const { data, error: signUpError } = await authClient.signUp.email({
-        email: formData.email,
-        password: formData.password,
-        name: formData.fullName,
-        password: formData.password,
-        image: formData.avatarUrl,
-        // Additional data as metadata (if your schema supports it)
-        metadata: {
-          bloodGroup: formData.bloodGroup,
-          district: formData.district,
-          upazila: formData.upazila,
-          phone: formData.phone,
-          avatarUrl: formData.avatarUrl,
-        },
-      });
+   const { data, error: signUpError } = await authClient.signUp.email({
+     email: formData.email,
+     password: formData.password,
+     name: formData.fullName,
+     image: formData.avatarUrl,
+     bloodGroup: formData.bloodGroup,
+     district: formData.district,
+     upazila: formData.upazila,
+     phone: formData.phone,
+   });
+
 
       if (signUpError) {
         // Handle specific error messages
