@@ -1,6 +1,7 @@
 // components/dashboards/AdminDashboard.jsx
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/auth-client';
 import {
   Users,
@@ -9,9 +10,9 @@ import {
   Activity,
   ArrowRight,
   Sparkles,
-  TrendingUp,
   BarChart3,
   PieChart,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -78,6 +79,62 @@ const statusData = [
 const AdminDashboard = () => {
   const { data: session, isPending } = useSession();
   const user = session?.user;
+
+    const [totalFunding, setTotalFunding] = useState(0);
+    const [loadingFunding, setLoadingFunding] = useState(true);
+
+    // Fetch total funding from backend
+    const fetchTotalFunding = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/funding');
+        const fundings = await res.json();
+        const total = fundings.reduce((sum, f) => sum + f.amount, 0);
+        setTotalFunding(total);
+      } catch (err) {
+        console.error('Funding fetch error:', err);
+      } finally {
+        setLoadingFunding(false);
+      }
+    };
+
+    useEffect(() => {
+      fetchTotalFunding();
+
+      
+      const handleFundingUpdate = () => {
+        fetchTotalFunding();
+      };
+      window.addEventListener('fundingUpdated', handleFundingUpdate);
+      return () =>
+        window.removeEventListener('fundingUpdated', handleFundingUpdate);
+    }, []);
+
+const stats = [
+  {
+    title: 'Total Donors',
+    value: 1256, 
+    icon: Users,
+    gradient: 'from-blue-500 to-indigo-600',
+    shadow: 'shadow-blue-500/30',
+  },
+  {
+    title: 'Total Funding',
+    value: `৳ ${totalFunding.toLocaleString()}`, 
+    icon: HandCoins,
+    gradient: 'from-emerald-500 to-teal-600',
+    shadow: 'shadow-emerald-500/30',
+  },
+  {
+    title: 'Blood Requests',
+    value: 843, 
+    icon: Droplet,
+    gradient: 'from-red-500 to-rose-600',
+    shadow: 'shadow-red-500/30',
+  },
+];
+
+
+
 
   if (isPending) {
     return (
