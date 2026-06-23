@@ -179,7 +179,7 @@ export default function AdminDashboard() {
             </p>
           </div>
           <Link
-            href="/dashboard/users"
+            href="/dashboard/allUsers"
             className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-white hover:text-gray-900 transition-all duration-300 group"
           >
             <Users size={18} />
