@@ -1,7 +1,7 @@
 // app/(dashboardLayout)/all-blood-donation-request/page.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Eye,
@@ -15,127 +15,51 @@ import {
   Clock,
   Filter,
   Search,
-  Users,
+  Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Dummy data – all requests from different users
-const allRequests = [
-  {
-    id: 'req-1',
-    recipientName: 'Rahim Uddin',
-    requesterName: 'Karim Uddin',
-    requesterEmail: 'karim@example.com',
-    district: 'Dhaka',
-    upazila: 'Dhanmondi',
-    donationDate: '2026-03-15',
-    donationTime: '10:00 AM',
-    bloodGroup: 'A+',
-    status: 'pending',
-  },
-  {
-    id: 'req-2',
-    recipientName: 'Sumaiya Akter',
-    requesterName: 'Ayesha Siddiqua',
-    requesterEmail: 'ayesha@example.com',
-    district: 'Chittagong',
-    upazila: 'Panchlaish',
-    donationDate: '2026-03-18',
-    donationTime: '02:30 PM',
-    bloodGroup: 'O-',
-    status: 'inprogress',
-  },
-  {
-    id: 'req-3',
-    recipientName: 'Abul Kalam',
-    requesterName: 'Rafiq Hasan',
-    requesterEmail: 'rafiq@example.com',
-    district: 'Rajshahi',
-    upazila: 'Boalia',
-    donationDate: '2026-03-20',
-    donationTime: '11:15 AM',
-    bloodGroup: 'AB+',
-    status: 'done',
-  },
-  {
-    id: 'req-4',
-    recipientName: 'Fatema Begum',
-    requesterName: 'Sohan Rahman',
-    requesterEmail: 'sohan@example.com',
-    district: 'Sylhet',
-    upazila: 'Sadar',
-    donationDate: '2026-03-22',
-    donationTime: '09:00 AM',
-    bloodGroup: 'B+',
-    status: 'canceled',
-  },
-  {
-    id: 'req-5',
-    recipientName: 'Imran Hossain',
-    requesterName: 'Nusrat Jahan',
-    requesterEmail: 'nusrat@example.com',
-    district: 'Khulna',
-    upazila: 'Dighalia',
-    donationDate: '2026-03-25',
-    donationTime: '03:45 PM',
-    bloodGroup: 'A-',
-    status: 'pending',
-  },
-  {
-    id: 'req-6',
-    recipientName: 'Lima Chowdhury',
-    requesterName: 'Maruf Hasan',
-    requesterEmail: 'maruf@example.com',
-    district: 'Barisal',
-    upazila: 'Bakerganj',
-    donationDate: '2026-03-28',
-    donationTime: '12:00 PM',
-    bloodGroup: 'O+',
-    status: 'inprogress',
-  },
-  {
-    id: 'req-7',
-    recipientName: 'Sabbir Ahmed',
-    requesterName: 'Karim Uddin',
-    requesterEmail: 'karim@example.com',
-    district: 'Dhaka',
-    upazila: 'Mirpur',
-    donationDate: '2026-04-02',
-    donationTime: '08:30 AM',
-    bloodGroup: 'AB-',
-    status: 'done',
-  },
-  {
-    id: 'req-8',
-    recipientName: 'Tamanna Rahman',
-    requesterName: 'Ayesha Siddiqua',
-    requesterEmail: 'ayesha@example.com',
-    district: 'Chittagong',
-    upazila: 'Kotwali',
-    donationDate: '2026-04-05',
-    donationTime: '02:00 PM',
-    bloodGroup: 'B-',
-    status: 'canceled',
-  },
-  // Add more if needed
-];
-
 const ITEMS_PER_PAGE = 5;
 
-export default function allDonationRequests() {
-  const [requests, setRequests] = useState(allRequests);
+export default function AllDonationRequests() {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+
+  // Fetch all requests from backend
+  const fetchRequests = () => {
+    setLoading(true);
+    fetch('http://localhost:5000/api/donation-requests?')
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch requests');
+        return res.json();
+      })
+      .then((data) => {
+        setRequests(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
   // Filter & Search
   const filteredRequests = requests.filter((req) => {
     if (filterStatus !== 'all' && req.status !== filterStatus) return false;
     if (
       searchTerm &&
-      !req.recipientName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !req.requesterName.toLowerCase().includes(searchTerm.toLowerCase())
+      !req.recipientName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !req.requesterName?.toLowerCase().includes(searchTerm.toLowerCase())
     )
       return false;
     return true;
@@ -147,19 +71,56 @@ export default function allDonationRequests() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleStatusChange = (id, newStatus) => {
-    setRequests((prev) =>
-      prev.map((req) => (req.id === id ? { ...req, status: newStatus } : req))
-    );
-    toast.success(`Request marked as ${newStatus}`);
+  // Status change (calls backend PUT)
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/donation-requests/${id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setRequests((prev) =>
+          prev.map((req) =>
+            req._id === id ? { ...req, status: newStatus } : req
+          )
+        );
+        toast.success(`Request marked as ${newStatus}`);
+      } else {
+        toast.error(data.message || 'Update failed');
+      }
+    } catch (err) {
+      toast.error('Network error');
+    }
   };
 
-  const handleDelete = () => {
+  // Delete (calls backend DELETE)
+  const handleDelete = async () => {
     const { id } = deleteModal;
     if (!id) return;
-    setRequests((prev) => prev.filter((req) => req.id !== id));
-    setDeleteModal({ open: false, id: null });
-    toast.success('Request deleted');
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/donation-requests/${id}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        setRequests((prev) => prev.filter((req) => req._id !== id));
+        toast.success('Request deleted');
+      } else {
+        toast.error(data.message || 'Deletion failed');
+      }
+    } catch (err) {
+      toast.error('Network error');
+    } finally {
+      setDeleteModal({ open: false, id: null });
+    }
   };
 
   const StatusBadge = ({ status }) => {
@@ -179,6 +140,25 @@ export default function allDonationRequests() {
       </span>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        <p>{error}</p>
+        <button onClick={fetchRequests} className="underline mt-2">
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-1">
@@ -266,7 +246,7 @@ export default function allDonationRequests() {
             {paginatedRequests.length > 0 ? (
               paginatedRequests.map((req) => (
                 <tr
-                  key={req.id}
+                  key={req._id}
                   className="hover:bg-gray-50/30 transition-colors"
                 >
                   <td className="px-5 py-4 font-medium text-gray-900">
@@ -304,14 +284,14 @@ export default function allDonationRequests() {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <Link
-                        href={`/dashboard/requests/${req.id}`}
+                        href={`/dashboard/requests/${req._id}`}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                         title="View Details"
                       >
                         <Eye size={16} />
                       </Link>
                       <Link
-                        href={`/dashboard/requests/${req.id}/edit`}
+                        href={`/dashboard/requests/${req._id}/edit`}
                         className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
                         title="Edit Request"
                       >
@@ -319,7 +299,7 @@ export default function allDonationRequests() {
                       </Link>
                       <button
                         onClick={() =>
-                          setDeleteModal({ open: true, id: req.id })
+                          setDeleteModal({ open: true, id: req._id })
                         }
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
                         title="Delete Request"
@@ -329,7 +309,7 @@ export default function allDonationRequests() {
                       {req.status === 'inprogress' && (
                         <>
                           <button
-                            onClick={() => handleStatusChange(req.id, 'done')}
+                            onClick={() => handleStatusChange(req._id, 'done')}
                             className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg"
                             title="Mark as Done"
                           >
@@ -337,7 +317,7 @@ export default function allDonationRequests() {
                           </button>
                           <button
                             onClick={() =>
-                              handleStatusChange(req.id, 'canceled')
+                              handleStatusChange(req._id, 'canceled')
                             }
                             className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
                             title="Cancel Request"
@@ -369,7 +349,7 @@ export default function allDonationRequests() {
         {paginatedRequests.length > 0 ? (
           paginatedRequests.map((req) => (
             <div
-              key={req.id}
+              key={req._id}
               className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 shadow-sm"
             >
               <div className="flex justify-between items-start">
@@ -401,19 +381,19 @@ export default function allDonationRequests() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Link
-                    href={`/dashboard/requests/${req.id}`}
+                    href={`/dashboard/requests/${req._id}`}
                     className="text-blue-600"
                   >
                     <Eye size={18} />
                   </Link>
                   <Link
-                    href={`/dashboard/requests/${req.id}/edit`}
+                    href={`/dashboard/requests/${req._id}/edit`}
                     className="text-emerald-600"
                   >
                     <Pencil size={18} />
                   </Link>
                   <button
-                    onClick={() => setDeleteModal({ open: true, id: req.id })}
+                    onClick={() => setDeleteModal({ open: true, id: req._id })}
                     className="text-red-600"
                   >
                     <Trash2 size={18} />
@@ -421,13 +401,13 @@ export default function allDonationRequests() {
                   {req.status === 'inprogress' && (
                     <>
                       <button
-                        onClick={() => handleStatusChange(req.id, 'done')}
+                        onClick={() => handleStatusChange(req._id, 'done')}
                         className="text-green-600"
                       >
                         <CheckCircle size={18} />
                       </button>
                       <button
-                        onClick={() => handleStatusChange(req.id, 'canceled')}
+                        onClick={() => handleStatusChange(req._id, 'canceled')}
                         className="text-red-600"
                       >
                         <XCircle size={18} />

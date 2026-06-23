@@ -29,112 +29,112 @@ import {
   Legend,
 } from 'recharts';
 
-// Static dummy data (replace with API later)
-const stats = [
-  {
-    title: 'Total Donors',
-    value: 1256,
-    icon: Users,
-    gradient: 'from-blue-500 to-indigo-600',
-    shadow: 'shadow-blue-500/30',
-  },
-  {
-    title: 'Total Funding',
-    value: '৳ 185,000',
-    icon: HandCoins,
-    gradient: 'from-emerald-500 to-teal-600',
-    shadow: 'shadow-emerald-500/30',
-  },
-  {
-    title: 'Blood Requests',
-    value: 843,
-    icon: Droplet,
-    gradient: 'from-red-500 to-rose-600',
-    shadow: 'shadow-red-500/30',
-  },
-];
-
-const monthlyRequestsData = [
-  { month: 'Jan', requests: 65 },
-  { month: 'Feb', requests: 78 },
-  { month: 'Mar', requests: 92 },
-  { month: 'Apr', requests: 81 },
-  { month: 'May', requests: 110 },
-  { month: 'Jun', requests: 105 },
-  { month: 'Jul', requests: 130 },
-  { month: 'Aug', requests: 122 },
-  { month: 'Sep', requests: 98 },
-  { month: 'Oct', requests: 115 },
-  { month: 'Nov', requests: 140 },
-  { month: 'Dec', requests: 155 },
-];
-
-const statusData = [
-  { name: 'Pending', value: 320, color: '#6b7280' },
-  { name: 'In Progress', value: 215, color: '#3b82f6' },
-  { name: 'Done', value: 250, color: '#10b981' },
-  { name: 'Canceled', value: 58, color: '#ef4444' },
-];
-
-const AdminDashboard = () => {
+export default function AdminDashboard() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
-    const [totalFunding, setTotalFunding] = useState(0);
-    const [loadingFunding, setLoadingFunding] = useState(true);
+  // Dynamic stats – all three fetched from backend
+  const [totalDonors, setTotalDonors] = useState(0);
+  const [totalFunding, setTotalFunding] = useState(0);
+  const [bloodRequests, setBloodRequests] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(true);
 
-    // Fetch total funding from backend
-    const fetchTotalFunding = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/funding');
-        const fundings = await res.json();
-        const total = fundings.reduce((sum, f) => sum + f.amount, 0);
-        setTotalFunding(total);
-      } catch (err) {
-        console.error('Funding fetch error:', err);
-      } finally {
-        setLoadingFunding(false);
-      }
+  // Static chart data (unchanged)
+  const monthlyRequestsData = [
+    { month: 'Jan', requests: 65 },
+    { month: 'Feb', requests: 78 },
+    { month: 'Mar', requests: 92 },
+    { month: 'Apr', requests: 81 },
+    { month: 'May', requests: 110 },
+    { month: 'Jun', requests: 105 },
+    { month: 'Jul', requests: 130 },
+    { month: 'Aug', requests: 122 },
+    { month: 'Sep', requests: 98 },
+    { month: 'Oct', requests: 115 },
+    { month: 'Nov', requests: 140 },
+    { month: 'Dec', requests: 155 },
+  ];
+
+  const statusData = [
+    { name: 'Pending', value: 320, color: '#6b7280' },
+    { name: 'In Progress', value: 215, color: '#3b82f6' },
+    { name: 'Done', value: 250, color: '#10b981' },
+    { name: 'Canceled', value: 58, color: '#ef4444' },
+  ];
+
+  
+  const fetchStats = async () => {
+    try {
+ 
+      const fundingRes = await fetch('http://localhost:5000/api/funding');
+      const fundings = await fundingRes.json();
+      const totalFunding = fundings.reduce((sum, f) => sum + f.amount, 0);
+      setTotalFunding(totalFunding);
+
+     
+      const usersRes = await fetch('http://localhost:5000/api/users');
+      const users = await usersRes.json();
+      const donorCount = users.filter(
+        (u) => (u.roll || 'Donor').toLowerCase() === 'donor'
+      ).length;
+      setTotalDonors(donorCount);
+
+      // Fetch donation requests count
+      const requestsRes = await fetch(
+        'http://localhost:5000/api/donation-requests'
+      );
+      const requests = await requestsRes.json();
+      setBloodRequests(requests.length);
+    } catch (err) {
+      console.error('Stats fetch error:', err);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+
+    
+    const handleStatsUpdate = () => {
+      fetchStats();
     };
+    window.addEventListener('statsUpdated', handleStatsUpdate);
+    return () => window.removeEventListener('statsUpdated', handleStatsUpdate);
+  }, []);
 
-    useEffect(() => {
-      fetchTotalFunding();
+  
+  const stats = [
+    {
+      title: 'Total Donors',
+      value: totalDonors.toLocaleString(),
+      icon: Users,
+      gradient: 'from-blue-500 to-indigo-600',
+      shadow: 'shadow-blue-500/30',
+    },
+    {
+      title: 'Total Funding',
+      value: `৳ ${totalFunding.toLocaleString()}`,
+      icon: HandCoins,
+      gradient: 'from-emerald-500 to-teal-600',
+      shadow: 'shadow-emerald-500/30',
+    },
+    {
+      title: 'Blood Requests',
+      value: bloodRequests.toLocaleString(),
+      icon: Droplet,
+      gradient: 'from-red-500 to-rose-600',
+      shadow: 'shadow-red-500/30',
+    },
+  ];
 
-      
-      const handleFundingUpdate = () => {
-        fetchTotalFunding();
-      };
-      window.addEventListener('fundingUpdated', handleFundingUpdate);
-      return () =>
-        window.removeEventListener('fundingUpdated', handleFundingUpdate);
-    }, []);
-
-const stats = [
-  {
-    title: 'Total Donors',
-    value: 1256, 
-    icon: Users,
-    gradient: 'from-blue-500 to-indigo-600',
-    shadow: 'shadow-blue-500/30',
-  },
-  {
-    title: 'Total Funding',
-    value: `৳ ${totalFunding.toLocaleString()}`, 
-    icon: HandCoins,
-    gradient: 'from-emerald-500 to-teal-600',
-    shadow: 'shadow-emerald-500/30',
-  },
-  {
-    title: 'Blood Requests',
-    value: 843, 
-    icon: Droplet,
-    gradient: 'from-red-500 to-rose-600',
-    shadow: 'shadow-red-500/30',
-  },
-];
-
-
-
+  if (isPending || loadingStats) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (isPending) {
     return (
@@ -325,18 +325,22 @@ const stats = [
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'View All Users', href: '/dashboard/users', icon: Users },
+            {
+              label: 'View All Users',
+              href: '/dashboard/allUsers',
+              icon: Users,
+            },
             {
               label: 'Manage Requests',
-              href: '/dashboard/requests',
+              href: '/dashboard/allDonationRequests',
               icon: Droplet,
             },
             {
               label: 'Funding Overview',
-              href: '/dashboard/funding',
+              href: '/funding',
               icon: HandCoins,
             },
-            { label: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+            { label: 'Reports', href: '#', icon: BarChart3 },
           ].map((action) => (
             <Link
               key={action.label}
@@ -353,6 +357,4 @@ const stats = [
       </div>
     </div>
   );
-};
-
-export default AdminDashboard;
+}
