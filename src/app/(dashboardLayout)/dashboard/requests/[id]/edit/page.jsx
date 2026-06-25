@@ -50,10 +50,9 @@ export default function EditRequestPage({ params }) {
 
   
   useEffect(() => {
-    fetch(`http://localhost:5000/api/donation-requests/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests/${id}`)
       .then((res) => res.json())
       .then((data) => {
-       
         setFormData({
           recipientName: data.recipientName || '',
           recipientDistrict: data.district || '',
@@ -143,7 +142,7 @@ export default function EditRequestPage({ params }) {
       };
 
       const res = await fetch(
-        `http://localhost:5000/api/donation-requests/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests/${id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

@@ -1,4 +1,4 @@
-// components/dashboards/VolunteerDashboard.jsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,10 +37,10 @@ const VolunteerDashboard = () => {
   const [bloodRequests, setBloodRequests] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // Dynamic recent donors
+  
   const [recentDonors, setRecentDonors] = useState([]);
 
-  // Weekly chart (static)
+ 
   const weeklyData = [
     { day: 'Sat', requests: 22 },
     { day: 'Sun', requests: 18 },
@@ -51,7 +51,7 @@ const VolunteerDashboard = () => {
     { day: 'Fri', requests: 40 },
   ];
 
-  // Upcoming camps (static)
+
   const upcomingCamps = [
     {
       id: 1,
@@ -71,13 +71,17 @@ const VolunteerDashboard = () => {
   const fetchData = async () => {
     try {
    
-      const fundingRes = await fetch('http://localhost:5000/api/funding');
+      const fundingRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/funding`
+      );
       const fundings = await fundingRes.json();
       const totalFunding = fundings.reduce((sum, f) => sum + f.amount, 0);
       setTotalFunding(totalFunding);
 
       
-      const usersRes = await fetch('http://localhost:5000/api/users');
+      const usersRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/users`
+      );
       const users = await usersRes.json();
 
       // Count donors
@@ -103,7 +107,7 @@ const VolunteerDashboard = () => {
 
       // Fetch blood requests count
       const requestsRes = await fetch(
-        'http://localhost:5000/api/donation-requests'
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests`
       );
       const requests = await requestsRes.json();
       setBloodRequests(requests.length);
@@ -133,7 +137,7 @@ const VolunteerDashboard = () => {
     },
     {
       title: 'Total Funding',
-      value: `৳ ${totalFunding.toLocaleString()}`,
+      value: `$ ${totalFunding.toLocaleString()}`,
       icon: HandCoins,
       gradient: 'from-green-500 to-teal-600',
       shadow: 'shadow-green-500/30',

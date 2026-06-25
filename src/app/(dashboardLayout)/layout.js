@@ -1,4 +1,4 @@
-// app/dashboard/layout.js
+
 'use client';
 
 import { useState } from 'react';
@@ -21,11 +21,11 @@ import { useRouter } from 'next/navigation';
 import Logo from '@/assets/logo.png';
 import Image from 'next/image';
 
-// Sidebar links based on roles
+// Static links (role‑based) that don’t depend on the session state
 const adminLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
-  { href: '/dashboard/allUsers', label: 'All Users', icon: Users },
+  { href: '/dashboard/all-users', label: 'All Users', icon: Users },
   { href: '/dashboard/allDonationRequests', label: 'All Requests', icon: Droplet },
 ];
 
@@ -44,14 +44,9 @@ const volunteerLinks = [
   },
 ];
 
-const donorLinks = [
+const baseDonorLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
-  {
-    href: '/dashboard/create-request',
-    label: 'Create Request',
-    icon: FilePlus,
-  },
   { href: '/dashboard/requests', label: 'My Requests', icon: ClipboardList },
 ];
 
@@ -61,11 +56,37 @@ export default function DashboardLayout({ children }) {
   const { data: session } = useSession();
   const router = useRouter();
 
+  // -------- inside the component --------
+  const isBlocked =
+    (session?.user?.status || 'active').toLowerCase() === 'blocked';
+
+  // Build donorLinks dynamically based on isBlocked
+  const donorLinks = [
+    ...baseDonorLinks,
+    // Only add Create Request if NOT blocked
+    ...(isBlocked
+      ? []
+      : [
+          {
+            href: '/dashboard/create-request',
+            label: 'Create Request',
+            icon: FilePlus,
+          },
+        ]),
+  ];
+
   // Determine sidebar links based on role
   const role = session?.user?.roll?.toLowerCase();
   let sidebarLinks = donorLinks; // default
   if (role === 'admin') sidebarLinks = adminLinks;
   else if (role === 'volunteer') sidebarLinks = volunteerLinks;
+
+  // Also remove Create Request from admin/volunteer if blocked (optional, but safe)
+  if (isBlocked) {
+    sidebarLinks = sidebarLinks.filter(
+      (link) => link.label !== 'Create Request'
+    );
+  }
 
   const handleLogout = async () => {
     const { authClient } = await import('@/lib/auth-client');
@@ -85,7 +106,7 @@ export default function DashboardLayout({ children }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-screen w-72 bg-gray-100 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:z-auto flex flex-col ${
+        className={`fixed top-0 left-0 h-screen w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:z-auto flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -192,8 +213,6 @@ export default function DashboardLayout({ children }) {
             backgroundImage: `url('https://i.ibb.co.com/8LW6kpVZ/32392668552.jpg')`,
             backgroundBlendMode: 'soft-light',
             backgroundColor: 'rgba(255, 240, 240, 0.65)',
-          
-            
           }}
         >
           <div className="flex-1 p-4 md:p-8">

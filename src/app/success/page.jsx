@@ -1,4 +1,4 @@
-// app/success/page.jsx
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,7 +17,7 @@ export default function SuccessPage() {
       return;
     }
 
-    fetch('http://localhost:5000/api/confirm-funding', {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/confirm-funding`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId }),

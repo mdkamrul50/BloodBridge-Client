@@ -20,7 +20,6 @@ import {
   MailIcon,
 } from 'lucide-react';
 
-// JSON data (adjust paths if needed)
 import districtsRaw from '../../../../../data/districts.json';
 import upazilasRaw from '../../../../../data/upazilas.json';
 
@@ -28,7 +27,7 @@ const districtsInfo = districtsRaw[2].data;
 const upazilasInfo = upazilasRaw[2].data;
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-// Fixed floating blood cells
+
 const floatingCells = [
   {
     width: 180,
@@ -87,6 +86,10 @@ export default function CreateDonationRequestPage() {
   const [filteredUpazilas, setFilteredUpazilas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+
+  const isBlocked =
+    (session?.user?.status || 'active').toLowerCase() === 'blocked';
 
   // Filter upazilas based on selected district
   useEffect(() => {
@@ -164,11 +167,14 @@ export default function CreateDonationRequestPage() {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/create-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/create-request`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
 
@@ -185,6 +191,21 @@ export default function CreateDonationRequestPage() {
       setLoading(false);
     }
   };
+
+  if (isBlocked) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center text-red-500">
+          <AlertCircle size={48} className="mx-auto mb-2" />
+          <p className="text-lg">Your account is blocked.</p>
+          <p className="text-sm text-gray-500">
+            You cannot create donation requests while blocked.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen">
       {/* Premium Background: floating blood cells */}

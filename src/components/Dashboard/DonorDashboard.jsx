@@ -1,4 +1,4 @@
-// app/dashboard/page.jsx  (or the file that exports DonorDashboard)
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -43,7 +43,9 @@ export default function DonorDashboard() {
 
   useEffect(() => {
     if (!user?.email) return;
-    fetch(`http://localhost:5000/api/my-donation-requests?email=${user.email}`)
+    fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/my-donation-requests?email=${user.email}`
+    )
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch requests');
         return res.json();
@@ -74,7 +76,7 @@ export default function DonorDashboard() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/donation-requests/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests/${id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -103,7 +105,7 @@ export default function DonorDashboard() {
     if (!id) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/donation-requests/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests/${id}`,
         {
           method: 'DELETE',
         }

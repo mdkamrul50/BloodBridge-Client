@@ -1,4 +1,4 @@
-// app/(dashboardLayout)/page.js
+
 'use client';
 
 import AdminDashboard from '@/components/Dashboard/AdminDashboard';

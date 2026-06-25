@@ -1,4 +1,4 @@
-// app/search/page.jsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -74,7 +74,7 @@ const handleSearch = async (e) => {
   if (district) params.append('district', district);
   if (upazila) params.append('upazila', upazila);
 
-  const url = `http://localhost:5000/api/donation-requests?${params.toString()}`;
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests?${params.toString()}`;
   console.log('Search URL:', url); // debug
 
   try {

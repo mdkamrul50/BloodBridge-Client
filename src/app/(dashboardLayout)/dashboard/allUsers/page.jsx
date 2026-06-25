@@ -1,4 +1,4 @@
-// components/dashboards/AllUsers.jsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,16 +26,15 @@ const AllUsers = () => {
   // Fetch all users from backend
   const fetchUsers = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/users')
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch users');
         return res.json();
       })
       .then((data) => {
-       
         const normalized = data.map((u) => ({
           ...u,
-          id: u._id ? u._id.toString() : u.id, 
+          id: u._id ? u._id.toString() : u.id,
           roll: (u.roll || 'donor').toLowerCase(),
           status: (u.status || 'active').toLowerCase(),
         }));
@@ -73,11 +72,14 @@ const AllUsers = () => {
   
   const updateUser = async (email, body) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/update`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, ...body }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/update`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, ...body }),
+        }
+      );
       const data = await res.json();
       if (data.success) {
         fetchUsers(); // refresh list

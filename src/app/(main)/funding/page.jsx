@@ -1,4 +1,4 @@
-// app/(dashboardLayout)/funding/page.jsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,9 +19,9 @@ export default function FundingPage() {
   const [fundAmount, setFundAmount] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  // Fetch real funding data from backend
+ 
   useEffect(() => {
-    fetch('http://localhost:5000/api/funding')
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/funding`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
@@ -43,7 +43,7 @@ export default function FundingPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // ----- REAL STRIPE CHECKOUT INTEGRATION -----
+
   const handleGiveFund = async () => {
     if (!session?.user) {
       toast.error('Please log in');
@@ -68,7 +68,7 @@ export default function FundingPage() {
 
       const data = await res.json();
       if (data.url) {
-        // Redirect to Stripe's hosted checkout page
+      
         window.location.href = data.url;
       } else {
         toast.error(data.error || 'Failed to create payment session');
@@ -78,10 +78,10 @@ export default function FundingPage() {
       toast.error('Network error');
       setPaymentLoading(false);
     }
-    // We don't setPaymentLoading(false) on success because the page will unload
+
   };
 
-  // Loading / error states
+
   if (sessionLoading || fetchLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0b0f1c]">
