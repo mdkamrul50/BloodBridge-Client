@@ -36,33 +36,49 @@ export default function FundingPage() {
       });
   }, []);
 
-  // Pagination logic (no filtering anymore)
+  // Pagination logic
   const totalPages = Math.ceil(fundings.length / ITEMS_PER_PAGE);
   const paginated = fundings.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleGiveFund = () => {
+  // ----- REAL STRIPE CHECKOUT INTEGRATION -----
+  const handleGiveFund = async () => {
+    if (!session?.user) {
+      toast.error('Please log in');
+      return;
+    }
     if (!fundAmount || isNaN(fundAmount) || Number(fundAmount) <= 0) {
       toast.error('Enter a valid amount');
       return;
     }
+
     setPaymentLoading(true);
-    // Simulate Stripe / backend call – later replace with real payment flow
-    setTimeout(() => {
-      const newFunding = {
-        _id: `temp${Date.now()}`,
-        donorName: session?.user?.name || 'You',
-        amount: Number(fundAmount),
-        date: new Date().toISOString().split('T')[0],
-      };
-      setFundings([newFunding, ...fundings]);
-      toast.success('Thank you for your donation!');
-      setShowModal(false);
-      setFundAmount('');
+    try {
+      const res = await fetch('/api/checkout-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Number(fundAmount),
+          donorName: session.user.name,
+          donorEmail: session.user.email,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        // Redirect to Stripe's hosted checkout page
+        window.location.href = data.url;
+      } else {
+        toast.error(data.error || 'Failed to create payment session');
+        setPaymentLoading(false);
+      }
+    } catch (err) {
+      toast.error('Network error');
       setPaymentLoading(false);
-    }, 1500);
+    }
+    // We don't setPaymentLoading(false) on success because the page will unload
   };
 
   // Loading / error states
@@ -85,7 +101,7 @@ export default function FundingPage() {
   return (
     <div className="min-h-screen max-w-full bg-[#0b0f1c] px-4 md:px-8 py-8 pt-38">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Welcome Banner (unchanged) */}
+        {/* Welcome Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#2d1b3e] p-8 md:p-10 text-white shadow-xl">
           <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/20 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-rose-600/10 rounded-full blur-3xl" />
@@ -115,7 +131,7 @@ export default function FundingPage() {
           </div>
         </div>
 
-        {/* Table – no search, just the list */}
+        {/* Table – Recent Donations */}
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
           <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-6">
             <HandCoins size={20} className="text-red-400" />
@@ -186,7 +202,7 @@ export default function FundingPage() {
                     {new Date(fund.date).toLocaleDateString('en-BD')}
                   </p>
                 </div>
-                <p className="text-emerald-300 font-bold">৳{fund.amount}</p>
+                <p className="text-emerald-300 font-bold">${fund.amount}</p>
               </div>
             ))}
             {paginated.length === 0 && (
@@ -234,7 +250,7 @@ export default function FundingPage() {
           )}
         </div>
 
-        {/* Donation Modal (unchanged) */}
+        {/* Donation Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-[#1e1e2e] w-full max-w-md rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
