@@ -95,7 +95,7 @@ const HeroSlider = () => {
                 </Link>
 
                 <Link
-                  href="/search"
+                  href="/search-blood-request"
                   className="group border border-white/50 bg-white/5 hover:bg-white hover:text-black px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-3 transition-all duration-300 backdrop-blur-sm hover:-translate-y-1"
                 >
                   Find Donors

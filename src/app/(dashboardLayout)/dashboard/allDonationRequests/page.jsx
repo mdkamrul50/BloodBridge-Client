@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from '@/lib/auth-client';
 import Link from 'next/link';
 import {
   Eye,
@@ -22,6 +23,11 @@ import toast from 'react-hot-toast';
 const ITEMS_PER_PAGE = 5;
 
 export default function AllDonationRequests() {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const role = (user?.roll || 'donor').toLowerCase();
+  const isAdmin = role === 'admin';
+
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,11 +36,9 @@ export default function AllDonationRequests() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-
-  // Fetch all requests from backend
   const fetchRequests = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/donation-requests?')
+    fetch('http://localhost:5000/api/donation-requests')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch requests');
         return res.json();
@@ -71,7 +75,7 @@ export default function AllDonationRequests() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Status change (calls backend PUT)
+  // ✅ Status change – allowed for BOTH admin and volunteer
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch(
@@ -90,6 +94,7 @@ export default function AllDonationRequests() {
           )
         );
         toast.success(`Request marked as ${newStatus}`);
+        window.dispatchEvent(new Event('statsUpdated'));
       } else {
         toast.error(data.message || 'Update failed');
       }
@@ -98,7 +103,7 @@ export default function AllDonationRequests() {
     }
   };
 
-  // Delete (calls backend DELETE)
+  // ❌ Delete – admin only
   const handleDelete = async () => {
     const { id } = deleteModal;
     if (!id) return;
@@ -113,6 +118,7 @@ export default function AllDonationRequests() {
       if (data.success) {
         setRequests((prev) => prev.filter((req) => req._id !== id));
         toast.success('Request deleted');
+        window.dispatchEvent(new Event('statsUpdated'));
       } else {
         toast.error(data.message || 'Deletion failed');
       }
@@ -283,6 +289,7 @@ export default function AllDonationRequests() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
+                      {/* View – always visible */}
                       <Link
                         href={`/dashboard/requests/${req._id}`}
                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
@@ -290,22 +297,30 @@ export default function AllDonationRequests() {
                       >
                         <Eye size={16} />
                       </Link>
-                      <Link
-                        href={`/dashboard/requests/${req._id}/edit`}
-                        className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                        title="Edit Request"
-                      >
-                        <Pencil size={16} />
-                      </Link>
-                      <button
-                        onClick={() =>
-                          setDeleteModal({ open: true, id: req._id })
-                        }
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                        title="Delete Request"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+
+                      {/* Admin only: Edit & Delete */}
+                      {isAdmin && (
+                        <>
+                          <Link
+                            href={`/dashboard/requests/${req._id}/edit`}
+                            className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                            title="Edit Request"
+                          >
+                            <Pencil size={16} />
+                          </Link>
+                          <button
+                            onClick={() =>
+                              setDeleteModal({ open: true, id: req._id })
+                            }
+                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                            title="Delete Request"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Status change – BOTH admin and volunteer, only for in‑progress requests */}
                       {req.status === 'inprogress' && (
                         <>
                           <button
@@ -344,7 +359,7 @@ export default function AllDonationRequests() {
         </table>
       </div>
 
-      {/* Mobile Cards */}
+      {/* Mobile Cards – same role restrictions */}
       <div className="md:hidden space-y-4">
         {paginatedRequests.length > 0 ? (
           paginatedRequests.map((req) => (
@@ -380,24 +395,33 @@ export default function AllDonationRequests() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
+                  {/* View */}
                   <Link
                     href={`/dashboard/requests/${req._id}`}
                     className="text-blue-600"
                   >
                     <Eye size={18} />
                   </Link>
-                  <Link
-                    href={`/dashboard/requests/${req._id}/edit`}
-                    className="text-emerald-600"
-                  >
-                    <Pencil size={18} />
-                  </Link>
-                  <button
-                    onClick={() => setDeleteModal({ open: true, id: req._id })}
-                    className="text-red-600"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  {/* Admin only: Edit & Delete */}
+                  {isAdmin && (
+                    <>
+                      <Link
+                        href={`/dashboard/requests/${req._id}/edit`}
+                        className="text-emerald-600"
+                      >
+                        <Pencil size={18} />
+                      </Link>
+                      <button
+                        onClick={() =>
+                          setDeleteModal({ open: true, id: req._id })
+                        }
+                        className="text-red-600"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+                  {/* Status change for in‑progress – both roles */}
                   {req.status === 'inprogress' && (
                     <>
                       <button
