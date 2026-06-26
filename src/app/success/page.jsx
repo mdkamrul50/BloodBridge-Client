@@ -1,4 +1,4 @@
-
+// app/success/page.jsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,10 +6,13 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Home, HandCoins, Loader2 } from 'lucide-react';
 
+// ✅ এই লাইনটি দাও, যাতে বিল্ডের সময় এটা প্রি-রেন্ডার না হয়
+export const dynamic = 'force-dynamic';
+
 export default function SuccessPage() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [status, setStatus] = useState('loading'); 
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
     if (!sessionId) {
@@ -17,7 +20,7 @@ export default function SuccessPage() {
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/confirm-funding`, {
+    fetch(`/api/confirm-funding`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId }),
