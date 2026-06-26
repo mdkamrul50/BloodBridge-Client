@@ -109,7 +109,7 @@ export default function AllDonationRequests() {
     if (!id) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/donation-requests/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/donation-requests/${id}`,
         {
           method: 'DELETE',
         }

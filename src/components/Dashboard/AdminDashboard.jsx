@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Total Funding',
-      value: `৳ ${totalFunding.toLocaleString()}`,
+      value: `$ ${totalFunding.toLocaleString()}`,
       icon: HandCoins,
       gradient: 'from-emerald-500 to-teal-600',
       shadow: 'shadow-emerald-500/30',

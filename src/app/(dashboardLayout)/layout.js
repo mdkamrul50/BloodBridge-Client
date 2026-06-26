@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
 import {
   LayoutDashboard,
   User,
@@ -21,11 +22,11 @@ import { useRouter } from 'next/navigation';
 import Logo from '@/assets/logo.png';
 import Image from 'next/image';
 
-// Static links (role‑based) that don’t depend on the session state
+
 const adminLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
-  { href: '/dashboard/all-users', label: 'All Users', icon: Users },
+  { href: '/dashboard/allUsers', label: 'All Users', icon: Users },
   { href: '/dashboard/allDonationRequests', label: 'All Requests', icon: Droplet },
 ];
 
@@ -53,8 +54,30 @@ const baseDonorLinks = [
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   const router = useRouter();
+
+  
+  const { data: session, isPending: sessionLoading } = useSession();
+
+  
+  useEffect(() => {
+    if (!sessionLoading && !session) {
+      router.push('/login');
+    }
+  }, [session, sessionLoading, router]);
+
+ 
+  if (sessionLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  
+  if (!session) return null;
 
   // -------- inside the component --------
   const isBlocked =

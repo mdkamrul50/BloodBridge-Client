@@ -22,7 +22,7 @@ const Navbar = () => {
   const isLoggedIn = !!session?.user;
   const user = session?.user;
 
-  console.log(user);
+
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
