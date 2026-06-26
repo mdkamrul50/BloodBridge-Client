@@ -1,15 +1,18 @@
-
+// app/donation-requests/page.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MapPin, Calendar, Clock, Droplet, Eye, Search } from 'lucide-react';
 
+const ITEMS_PER_PAGE = 10;
+
 export default function PublicRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetch(
@@ -29,12 +32,26 @@ export default function PublicRequestsPage() {
       });
   }, []);
 
+  // Filter based on search term
   const filtered = requests.filter(
     (req) =>
       req.recipientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       req.bloodGroup.toLowerCase().includes(searchTerm.toLowerCase()) ||
       req.district.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when search term changes
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
 
   if (loading) {
     return (
@@ -91,25 +108,25 @@ export default function PublicRequestsPage() {
             type="text"
             placeholder="Search by name, blood group, or district..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
           />
         </div>
 
         {/* Cards Grid */}
-        {filtered.length === 0 ? (
+        {paginated.length === 0 ? (
           <p className="text-center text-gray-400 text-lg">
             No pending requests match your search.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((req, index) => (
+            {paginated.map((req, index) => (
               <div
                 key={req._id}
                 className="group relative bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 overflow-hidden transition-all duration-500 ease-out hover:border-red-500/40 hover:shadow-[0_0_30px_rgba(220,38,38,0.15)] hover:-translate-y-1 animate-fade-in-up"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                {/* Animated gradient top border – expands from left to right */}
+                {/* Animated gradient top border */}
                 <span className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl bg-gradient-to-r from-red-600 to-rose-500 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out" />
 
                 {/* Blood group badge */}
@@ -117,8 +134,8 @@ export default function PublicRequestsPage() {
                   <h2 className="text-2xl font-bold text-white">
                     {req.recipientName}
                   </h2>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-5  text-red-500 rounded-full text-sm font-bold shadow-sm shadow-red-500 ">
-                    <Droplet size={16} className="" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600/20 text-red-300 rounded-full text-sm font-bold border border-red-500/30">
+                    <Droplet size={16} />
                     {req.bloodGroup}
                   </span>
                 </div>
@@ -157,6 +174,39 @@ export default function PublicRequestsPage() {
                 </Link>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-10">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-2 text-sm bg-white/5 border border-gray-700 rounded-lg disabled:opacity-40 hover:bg-white/10 text-gray-300 transition"
+            >
+              Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                  currentPage === page
+                    ? 'bg-red-600 text-white shadow'
+                    : 'bg-white/5 border border-gray-700 text-gray-300 hover:bg-white/10'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 text-sm bg-white/5 border border-gray-700 rounded-lg disabled:opacity-40 hover:bg-white/10 text-gray-300 transition"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

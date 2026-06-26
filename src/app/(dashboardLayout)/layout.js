@@ -79,14 +79,14 @@ export default function DashboardLayout({ children }) {
   
   if (!session) return null;
 
-  // -------- inside the component --------
+ 
   const isBlocked =
     (session?.user?.status || 'active').toLowerCase() === 'blocked';
 
-  // Build donorLinks dynamically based on isBlocked
+  
   const donorLinks = [
     ...baseDonorLinks,
-    // Only add Create Request if NOT blocked
+   
     ...(isBlocked
       ? []
       : [
@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }) {
   if (role === 'admin') sidebarLinks = adminLinks;
   else if (role === 'volunteer') sidebarLinks = volunteerLinks;
 
-  // Also remove Create Request from admin/volunteer if blocked (optional, but safe)
+  
   if (isBlocked) {
     sidebarLinks = sidebarLinks.filter(
       (link) => link.label !== 'Create Request'
