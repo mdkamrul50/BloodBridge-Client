@@ -19,7 +19,7 @@ export default function SuccessContent() {
       return;
     }
 
-    fetch(`/api/confirm-funding`, {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/confirm-funding`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId }),
