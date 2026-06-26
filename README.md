@@ -117,7 +117,4 @@ Every feature is built with a focus on simplicity, security, and real‑time int
 - MongoDB Atlas cluster (or local MongoDB)
 - Stripe account (test keys for development)
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/bloodbridge.git
-cd bloodbridge
+
