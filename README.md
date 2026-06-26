@@ -9,7 +9,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-%2338bdf8)](https://tailwindcss.com/)
 [![Better Auth](https://img.shields.io/badge/Better_Auth-1.x-orange)](https://better-auth.com)
 
-**Live Website** → [https://bloodbridge.vercel.app]((https://blood-bridge-client-dun.vercel.app))  
+**Live Website** → [https://bloodbridge-client-dun.vercel.app]((https://blood-bridge-client-dun.vercel.app))  
 
 ---
 
